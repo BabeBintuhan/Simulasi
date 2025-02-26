@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>BABE Bintuhan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #27ae60, #f39c12);
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+            color: black;
+        }
+        .logo {
+            display: block;
+            width: 100px;
+            margin: 0 auto 10px;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        label {
+            font-weight: bold;
+            color: #f39c12;
+            width: 60%;
+            text-align: left;
+        }
+        select, input {
+            width: 100%;  /* Pastikan elemen memenuhi container */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: white;
+            box-sizing: border-box; /* Agar padding tidak mempengaruhi lebar */
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #219150;
+        }
+        .result-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f39c12;
+            color: white;
+        }
+        select {
+            color: gray;
+        }
+
+        /* Saat pengguna memilih opsi, warnanya berubah menjadi hitam */
+        select:focus, select:not(:invalid) {
+            color: black;
+        }
+    </style>
+    <script>
+        function formatRupiah(angka) {
+            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function updateNominal() {
+            let input = document.getElementById("nominal");
+            let value = input.value.replace(/[^\d]/g, "");
+            input.value = value ? "Rp " + formatRupiah(value) : "";
+        }
+
+        function hitungBunga() {
+            let produk = document.getElementById("produk").value;
+            let nominalStr = document.getElementById("nominal").value.replace(/[^\d]/g, '');
+            let jangkaWaktu = document.getElementById("jangkaWaktu").value;
+
+            if (produk === "" || jangkaWaktu === "" || !nominalStr || parseInt(nominalStr) <= 0) {
+                alert("Mohon pilih produk, jangka waktu, dan masukkan nominal yang valid.");
+                return;
+            }
+
+            jangkaWaktu = parseInt(jangkaWaktu);
+            let nominal = parseInt(nominalStr);
+            let bunga = 0, cashback = 0, pajak = 20 / 100;
+
+            if (produk === "BABE Sureprize") {
+                bunga = 0.5; cashback = 4.0;
+            } else if (produk === "Deposito") {
+                bunga = jangkaWaktu <= 6 ? 3.0 : 3.25;
+            }
+
+            let hasilBunga = ((nominal * bunga * jangkaWaktu) / (100 * 12)) * (1 - pajak);
+            let bungaPerBulan = hasilBunga / jangkaWaktu;
+            let hasilCashback = ((nominal * cashback * jangkaWaktu) / (100 * 12)) * (1 - pajak);
+
+            document.getElementById("hasilTable").innerHTML = `
+                <tr>
+                    <th>Nominal</th>
+                    <td>Rp ${formatRupiah(nominal)}</td>
+                </tr>
+                <tr>
+                    <th>Jangka Waktu</th>
+                    <td>${jangkaWaktu} bulan</td>
+                </tr>
+                <tr>
+                    <th>Bunga (${bunga}%)</th>
+                    <td>Rp ${formatRupiah(hasilBunga.toFixed(0))}</td>
+                </tr>
+                <tr>
+                    <th>Bunga Per Bulan</th>
+                    <td>Rp ${formatRupiah(bungaPerBulan.toFixed(0))}</td>
+                </tr>
+                ${produk === "BABE Sureprize" ? `
+                <tr>
+                    <th>Cashback (${cashback}%)</th>
+                    <td>Rp ${formatRupiah(hasilCashback.toFixed(0))}</td>
+                </tr>
+                ` : ''}
+            `;
+
+            document.getElementById("result-container").style.display = "block";
+        }
+
+        function tutupHasil() {
+            document.getElementById("result-container").style.display = "none";
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <img src="logo_bank.png" alt="Logo Bank" class="logo">
+        <h3>Simulasi Perhitungan Bunga</h3>
+
+        <div class="form-group">
+            <label for="produk">Produk</label>
+            <select id="produk" required>
+                <option value="" disabled selected hidden>-- Pilih Produk --</option>
+                <option value="BABE Sureprize">BABE Sureprize</option>
+                <option value="Deposito">Deposito</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="jangkaWaktu">Jangka Waktu</label>
+            <select id="jangkaWaktu" required>
+                <option value="" disabled selected hidden>-- Pilih Jangka Waktu --</option>
+                <option value="1">1 Bulan</option>
+                <option value="2">2 Bulan</option>
+                <option value="3">3 Bulan</option>
+                <option value="4">4 Bulan</option>
+                <option value="5">5 Bulan</option>
+                <option value="6">6 Bulan</option>
+                <option value="7">7 Bulan</option>
+                <option value="8">8 Bulan</option>
+                <option value="9">9 Bulan</option>
+                <option value="10">10 Bulan</option>
+                <option value="11">11 Bulan</option>
+                <option value="12">12 Bulan</option>
+                <option value="13">13 Bulan</option>
+                <option value="14">14 Bulan</option>
+                <option value="15">15 Bulan</option>
+                <option value="16">16 Bulan</option>
+                <option value="17">17 Bulan</option>
+                <option value="18">18 Bulan</option>
+                <option value="19">19 Bulan</option>
+                <option value="20">20 Bulan</option>
+                <option value="21">21 Bulan</option>
+                <option value="22">22 Bulan</option>
+                <option value="23">23 Bulan</option>
+                <option value="24">24 Bulan</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="nominal">Nominal</label>
+            <input type="text" id="nominal" onkeyup="updateNominal();" placeholder="Rp 0">
+        </div>
+
+        <button onclick="hitungBunga()">Hitung</button>
+    </div>
+
+    <div id="result-container" class="result-container">
+        <table id="hasilTable"></table>
+        <button onclick="tutupHasil()">Hitung Ulang</button>
+    </div>
+</body>
+</html>
